@@ -22,7 +22,7 @@ docker run --env-file "$ENV_FILE" \
 
 ## Config Options
 
-The following environment variables are supported for configuration (and their default values are shown). Simply omit any variables you don't need to change and if you want to just use all defaults you can leave `--env-file megadetector.env` out of the command alltogether. 
+The following environment variables are supported for configuration (and their default values are shown). Simply omit any variables you don't need to change and if you want to just use all defaults you can leave `--env-file $ENV_FILE` out of the command alltogether. 
 
 | Variable | Default | Description |
 | ---------|---------|------------ |
