@@ -4,7 +4,7 @@ from tqdm import tqdm
 from pathlib import Path
 from lib_common import read_yaml
 from lib_tools import contains_animal
-import visualization.visualization_utils as viz_utils
+import md_visualization.visualization_utils as viz_utils
 
 config = read_yaml('config.yaml')
 for conf_key in config.keys():
