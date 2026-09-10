@@ -1,11 +1,6 @@
-# set base image (host OS)
-FROM zaandahl/mewc-detect:5.0.13
-
-# set the working directory in the container
+# Required: use the fixed parent built from the matching source lock.
+ARG MEWC_DETECT_BASE
+FROM ${MEWC_DETECT_BASE}
 WORKDIR /code
-
-# copy code
 COPY src/ .
-
-# run mewc_snip on start
-CMD [ "python", "./mewc_snip.py" ]
+CMD ["python", "./mewc_snip.py"]
