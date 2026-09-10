@@ -2,6 +2,8 @@
 
 # mewc-snip
 
+The integrity changes in this checkout require the source builds described in [BUILDING.md](BUILDING.md). Existing DockerHub examples do not provide these fixes until a maintainer publishes a compatible release. Use the tested image ID or digest from the generated image lock.
+
 ## Introduction
 This repository contains code to build a Docker container for running mewc-snip. This is a tool used to snip detections from camera trap images identified in  [MegaDetector](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md) JSON output. 
 
