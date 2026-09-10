@@ -163,3 +163,24 @@ def test_snip_entrypoint_reports_success_and_failure(tmp_path, present, expected
     assert result.returncode == expected_exit, result.stderr
     manifest = json.loads((tmp_path / 'snips/crop_manifest.json').read_text())
     assert manifest['complete'] is present
+
+
+def test_omitted_filter_options_use_documented_defaults(tmp_path):
+    cfg = prepare(tmp_path, [])
+    for key in ('OVERLAP', 'EDGE_DIST', 'MIN_EDGES', 'UPPER_CONF'):
+        del cfg[key]
+    manifest = run(cfg, PillowVisualization)
+    assert manifest['complete']
+    assert manifest['effective_options'] == dict(LOWER_CONF=.05, SNIP_SIZE=20,
+                                                OVERLAP=.3, EDGE_DIST=.02, MIN_EDGES=0, UPPER_CONF=.9)
+
+
+@pytest.mark.parametrize('value', [True, .5, '0.5', 'invalid'])
+def test_invalid_min_edges_invalidates_previous_manifest(tmp_path, value):
+    cfg = prepare(tmp_path, [])
+    assert run(cfg, PillowVisualization)['complete']
+    cfg['MIN_EDGES'] = value
+    manifest = run(cfg, PillowVisualization)
+    assert not manifest['complete']
+    assert 'MIN_EDGES must be an integer' in manifest['errors'][0]['reason']
+    assert json.loads((tmp_path / 'snips/crop_manifest.json').read_text()) == manifest

@@ -2,7 +2,7 @@
 
 # mewc-snip
 
-The integrity changes in this checkout require the source builds described in [BUILDING.md](BUILDING.md). Existing DockerHub examples do not provide these fixes until a maintainer publishes a compatible release. Use the tested image ID or digest from the generated image lock.
+The integrity changes in this checkout require the source builds described in [BUILDING.md](BUILDING.md). Published legacy tags do not provide these fixes. Use the tested image ID or digest from the generated image lock.
 
 ## Introduction
 This repository contains code to build a Docker container for running mewc-snip. This is a tool used to snip detections from camera trap images identified in  [MegaDetector](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md) JSON output. 
@@ -17,11 +17,12 @@ VARIABLE=VALUE
 After installing Docker you can run the container using a command similar to the following. Substitute `"$IN_DIR"` for your image directory and create a text file `"$ENV_FILE"` with any config options you wish to override. 
 
 ```
-docker pull zaandahl/mewc-snip:v1.0
+# Set STAGE_IMAGE to this stage's immutable image ID or registry digest from the generated image lock.
+: "${STAGE_IMAGE:?Set the reviewed stage image}"
 docker run --env-file "$ENV_FILE" \
     --interactive --tty --rm \
     --volume "$IN_DIR":/images \
-    zaandahl/mewc-snip
+    "$STAGE_IMAGE"
 ```
 
 ## Config Options

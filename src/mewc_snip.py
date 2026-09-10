@@ -10,6 +10,7 @@ from lib_command import integer, relative_path
 from lib_tools import validate_detections, process_detections, DEFAULT_POLICY
 
 CROP_POLICY = DEFAULT_POLICY
+FILTER_DEFAULTS = dict(OVERLAP=.3, EDGE_DIST=.02, MIN_EDGES=0, UPPER_CONF=.9)
 
 
 def atomic_json(path, document):
@@ -44,13 +45,18 @@ def run(config, visualization=None):
     # Fail closed before reading detector input or loading an optional runtime dependency.
     manifest_path = output_dir / 'crop_manifest.json'
     policy = config.get('SUPPRESSION_POLICY', CROP_POLICY)
-    filtering = {key: config[key] for key in ('OVERLAP', 'EDGE_DIST', 'MIN_EDGES', 'UPPER_CONF')}
-    filtering = {key: float(value) for key, value in filtering.items()}
     manifest = {'schema_version': 1, 'policy': policy, 'selection': 'animal', 'complete': False,
-                'effective_options': {'LOWER_CONF': threshold, 'SNIP_SIZE': size, **filtering},
+                'effective_options': {'LOWER_CONF': threshold, 'SNIP_SIZE': size},
                 'crops': [], 'omissions': [], 'errors': [], 'images': []}
     atomic_json(manifest_path, manifest)
     try:
+        filtering = {key: config.get(key, default) for key, default in FILTER_DEFAULTS.items()}
+        filtering['MIN_EDGES'] = integer(filtering['MIN_EDGES'], 'MIN_EDGES', minimum=0)
+        for key in ('OVERLAP', 'EDGE_DIST', 'UPPER_CONF'):
+            filtering[key] = float(filtering[key])
+            if not math.isfinite(filtering[key]) or not 0 <= filtering[key] <= 1:
+                raise ValueError(f'{key} must be finite and between 0 and 1')
+        manifest['effective_options'].update(filtering)
         with open(json_path, encoding='utf-8') as stream:
             data = json.load(stream)
         if not isinstance(data, dict) or not isinstance(data.get('images'), list):
@@ -155,6 +161,9 @@ def main(config_path=None):
     try:
         with open(config_path or Path(__file__).with_name('config.yaml'), encoding='utf-8') as stream:
             config = yaml.safe_load(stream)
+        if not isinstance(config, dict):
+            raise ValueError('Configuration must be a mapping')
+        config = {**FILTER_DEFAULTS, **config}
         config.update({key: os.environ[key] for key in config if key in os.environ})
         return 0 if run(config)['complete'] else 1
     except (OSError, ValueError, TypeError, KeyError, yaml.YAMLError) as exc:
